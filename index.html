@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Cuadrado Saltarín Combo + Ranking</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+
+    </head>
+<body>
+    <div id="gameContainer">
+        <div id="player"></div>
+        <div id="score">0</div>
+        <div id="timer">120.0</div>
+        <div id="combo">Combo: 0</div>
+
+        <div id="emailScreen" class="screen">
+            <h1>¡Bienvenido!</h1>
+            <p>Ingresa tu correo para comenzar</p>
+            <form id="emailForm">
+                <div class="form-group">
+                    <input id="initialEmail" type="email" placeholder="Correo electrónico" required autocomplete="email">
+                </div>
+                <button type="submit">CONTINUAR</button>
+            </form>
+        </div>
+
+        <div id="registerScreen" class="screen screen--hidden">
+            <h1>¡Cuadrado Saltarín Combo!</h1>
+            <p>Regístrate para jugar y aparecer en el ranking</p>
+            <form id="registerForm">
+                <div class="form-group">
+                    <input id="playerEmail" type="email" placeholder="Tu correo electrónico" required autocomplete="email" readonly> </div>
+                <div class="form-group">
+                    <input id="playerName" type="text" placeholder="Tu nombre (Max 15)" maxlength="15" required autocomplete="nickname">
+                </div>
+                <div class="form-group checkbox-container">
+                    <input type="checkbox" id="termsCheckbox" required>
+                    <label for="termsCheckbox">Acepto los <a href="#" id="openTermsBtn">términos y condiciones</a></label>
+                </div>
+                <button type="submit" id="registerButton">REGISTRARME</button>
+            </form>
+        </div>
+
+        <div id="startScreen" class="screen screen--hidden">
+            <h1>¡Cuadrado Saltarín Combo!</h1>
+            <p>
+                <b>Espacio</b> para Saltar | Evita Obstáculos (<span class="instruction-color--red">-1s</span>)<br>
+                Recoge Monedas:<br>
+                <span class="instruction-color--green">Verde</span>: +1s | <span class="instruction-color--blue">Azul</span>: +2s & Velocidad (Combo 3+) | <span class="instruction-color--yellow">Amarilla</span>: +5s, Velocidad & Doble Salto Persistente (Combo 6+)
+            </p>
+            <p class="mobile-instructions screen--hidden"> <b>Toca la pantalla</b> para saltar y evitar obstáculos
+            </p>
+            <button id="startButton">¡JUGAR!</button>
+        </div>
+
+        <div id="rankingDisplay" class="screen screen--hidden">
+            <h1>¡Tiempo Agotado!</h1>
+            <p id="finalScoreText"></p>
+            <div id="ranking"></div>
+            <button id="restartButton">JUGAR DE NUEVO</button>
+        </div>
+
+        <div id="termsModal" class="modal"> <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h2>Términos y Condiciones</h2>
+                <div class="terms-content">
+                    <p>Al utilizar este juego, aceptas los siguientes términos y condiciones:</p>
+
+                    <h3>1. Uso del Juego</h3>
+                    <p>Este juego está diseñado para entretenimiento. Puedes utilizarlo de forma personal y no comercial.</p>
+
+                    <h3>2. Información del Usuario</h3>
+                    <p>La información que proporcionas (nombre y correo electrónico) se utiliza exclusivamente para identificarte en el ranking y no será compartida con terceros.</p>
+
+                    <h3>3. Comportamiento</h3>
+                    <p>No se permiten nombres ofensivos o inapropiados. Nos reservamos el derecho de eliminar cualquier entrada que consideremos inadecuada.</p>
+
+                    <h3>4. Propiedad Intelectual</h3>
+                    <p>Todos los derechos del juego pertenecen a sus creadores. No se permite la reproducción o distribución sin autorización.</p>
+
+                    <h3>5. Disponibilidad</h3>
+                    <p>No garantizamos la disponibilidad continua del juego o del servicio de ranking. Podemos realizar mantenimiento o actualizaciones en cualquier momento.</p>
+                </div>
+                <button id="acceptTermsBtn">Aceptar</button>
+            </div>
+        </div>
+    </div> <div id="orientation-message" style="display: none;"> <div>
+            <p>Por favor, gira tu dispositivo para jugar</p>
+            <div class="rotate-icon">⟳</div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
