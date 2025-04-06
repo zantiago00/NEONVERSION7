@@ -1,0 +1,679 @@
+/* --- Variables Globales y Fuentes --- */
+:root {
+    --font-primary: 'Press Start 2P', 'Courier New', monospace;
+    --color-bg: #000000;
+    --color-grid: rgba(255, 255, 255, 0.08);
+    --color-border-main: #00ffff; /* Cyan */
+    --color-shadow-main: rgba(0, 255, 255, 0.7);
+    --color-shadow-main-inset: rgba(0, 255, 255, 0.5);
+    --color-player-bg: rgba(10, 10, 10, 0.5);
+    --color-player-border: var(--color-border-main);
+    --color-player-shadow: #00ffff;
+    --color-player-powered-border: #ffff00; /* Amarillo */
+    --color-player-powered-shadow: #ffff00;
+    --color-obstacle-border: #ff00ff; /* Magenta */
+    --color-obstacle-bg: rgba(255, 0, 255, 0.3);
+    --color-obstacle-shadow: #ff00ff;
+    --color-coin-green: #00ff00;
+    --color-coin-blue: #0077ff;
+    --color-coin-yellow: #ffff00;
+    --color-text-light: #ffffff;
+    --color-text-medium: #dddddd;
+    --color-text-dark: #cccccc;
+    --color-text-darker: #000000;
+    --color-text-placeholder: #007777; /* Cyan oscuro */
+    --color-ui-bg: rgba(0, 0, 0, 0.6);
+    --color-ui-border: var(--color-text-light);
+    --color-screen-bg: rgba(0, 0, 0, 0.9);
+    --color-screen-title: var(--color-border-main);
+    --color-button-text: var(--color-coin-green);
+    --color-button-border: var(--color-coin-green);
+    --color-button-bg: var(--color-bg);
+    --color-button-hover-text: var(--color-text-darker);
+    --color-button-hover-bg: var(--color-coin-green);
+    --color-input-border: var(--color-border-main);
+    --color-input-bg: var(--color-bg);
+    --color-input-text: var(--color-border-main);
+    --color-link: var(--color-border-main);
+    --color-modal-bg: #0a0a0a;
+    --color-modal-border: var(--color-border-main);
+    --color-modal-shadow: var(--color-shadow-main);
+    --color-terms-bg: rgba(0, 0, 0, 0.3);
+    --color-terms-border: #333;
+    --color-floating-plus: var(--color-coin-green);
+    --color-floating-minus: #ff0000; /* Rojo Neón */
+    --color-ranking-bg: rgba(10, 10, 10, 0.85);
+    --color-ranking-border: #444;
+    --color-ranking-header-bg: #1a1a1a;
+    --color-ranking-header-text: var(--color-border-main);
+    --color-ranking-row-alt-bg: rgba(30, 30, 30, 0.7);
+    --color-ranking-row-hover-bg: rgba(0, 255, 255, 0.1);
+    --color-hit-border: #ff0000; /* Rojo para efecto hit */
+    --color-hit-shadow: rgba(255, 0, 0, 0.7);
+    --color-hit-shadow-inset: rgba(255, 0, 0, 0.5);
+
+    /* Nota: @import de fuentes eliminado, se carga con <link> en HTML */
+}
+
+/* --- Estilos Base y Contenedor --- */
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--color-bg);
+    font-family: var(--font-primary);
+    /* touch-action movido a media query específica más abajo */
+}
+
+#gameContainer {
+    width: 100%;
+    height: 100%;
+    max-width: 1600px;
+    max-height: 800px;
+    aspect-ratio: 2 / 1;
+    position: relative;
+    overflow: hidden;
+    background-color: var(--color-bg);
+    background-image:
+        linear-gradient(var(--color-grid) 1px, transparent 1px), /* Líneas horizontales */
+        linear-gradient(90deg, var(--color-grid) 1px, transparent 1px); /* Líneas verticales */
+    background-size: 40px 40px;
+    border: 3px solid var(--color-border-main);
+    box-shadow: 0 0 15px var(--color-shadow-main), 0 0 5px var(--color-shadow-main-inset) inset;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    /* touch-action: none; movido a media query */
+}
+
+/* --- Elementos del Juego --- */
+#player {
+    width: 8.75%; /* Relativo al contenedor (140px en 1600px) */
+    height: 17.5%; /* Relativo al contenedor (140px en 800px) */
+    background: var(--color-player-bg);
+    border: 4px solid var(--color-player-border);
+    box-shadow: 0 0 10px var(--color-player-shadow), 0 0 20px var(--color-player-shadow) inset;
+    position: absolute;
+    bottom: 0;
+    left: 6.25%; /* 100px relativo a 1600px */
+    transition: transform 0.1s, border-color 0.3s, box-shadow 0.3s, bottom 0s; /* bottom 0s para evitar transición en caída */
+    z-index: 5;
+    box-sizing: border-box;
+}
+
+#player.powered {
+    border-color: var(--color-player-powered-border);
+    box-shadow: 0 0 25px var(--color-player-powered-shadow), 0 0 35px var(--color-player-powered-shadow) inset, 0 0 10px var(--color-player-shadow);
+}
+
+#player.jumping {
+    box-shadow: 0 0 15px var(--color-player-shadow), 0 0 25px var(--color-player-shadow) inset, 0 0 5px var(--color-text-light);
+}
+
+#player.collected {
+    transform: scale(1.1); /* La transición existente lo hará suave */
+}
+
+.obstacle {
+    background: var(--color-obstacle-bg);
+    border: 4px solid var(--color-obstacle-border);
+    box-shadow: 0 0 8px var(--color-obstacle-shadow), 0 0 15px var(--color-obstacle-shadow) inset;
+    width: 3.875%; /* 62px relativo a 1600px */
+    height: 7.75%; /* 62px relativo a 800px */
+    position: absolute;
+    bottom: 0;
+    z-index: 4;
+    box-sizing: border-box;
+    /* Nota: Estilos de visibilidad forzada con !important ELIMINADOS */
+    /* La visibilidad se controla por su presencia/ausencia en el DOM */
+}
+
+.obstacle.large {
+    width: 4.625%; /* 74px relativo a 1600px */
+    height: 9.25%; /* 74px relativo a 800px */
+}
+
+.coin {
+    width: 3.125%; /* 50px relativo a 1600px */
+    height: 6.25%; /* 50px relativo a 800px */
+    border-radius: 50%;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.75em;
+    color: var(--color-text-darker);
+    z-index: 4;
+    border: 2px solid rgba(0, 0, 0, 0.5);
+}
+
+.coin.green {
+    background: var(--color-coin-green);
+    box-shadow: 0 0 12px var(--color-coin-green), 0 0 5px var(--color-text-light) inset;
+}
+.coin.blue {
+    background: var(--color-coin-blue);
+    box-shadow: 0 0 12px var(--color-coin-blue), 0 0 5px var(--color-text-light) inset;
+}
+.coin.yellow {
+    background: var(--color-coin-yellow);
+    box-shadow: 0 0 12px var(--color-coin-yellow), 0 0 5px var(--color-text-light) inset;
+    animation: pulse 0.5s infinite alternate;
+}
+
+@keyframes pulse {
+    from { transform: scale(1); box-shadow: 0 0 12px currentColor, 0 0 5px var(--color-text-light) inset; }
+    to { transform: scale(1.1); box-shadow: 0 0 20px currentColor, 0 0 10px var(--color-text-light) inset; }
+}
+
+/* --- Interfaz de Usuario (Score, Timer, Combo) --- */
+#score, #timer, #combo {
+    position: absolute;
+    top: 2.5%; /* 20px relativo a 800px */
+    background: var(--color-ui-bg);
+    padding: 1.25% 3.125%; /* 10px 25px relativo a 800px y 1600px */
+    border: 2px solid var(--color-ui-border);
+    font-size: clamp(14px, 2.5vmin, 24px); /* Tamaño fluido con límites */
+    color: var(--color-text-light);
+    font-weight: bold;
+    border-radius: 8px;
+    z-index: 10;
+    min-width: 9.375%; /* 150px relativo a 1600px */
+    text-align: center;
+    text-shadow: 0 0 5px var(--color-text-light), 0 0 10px rgba(255, 255, 255, 0.5);
+}
+#score { right: 1.25%; }
+#timer { left: 1.25%; }
+#combo { left: 50%; transform: translateX(-50%); }
+
+/* --- Pantallas (Inicio, Registro, Fin) --- */
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--color-screen-bg);
+    display: flex; /* Flex por defecto, .screen--hidden lo ocultará */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    text-align: center;
+    padding: 2.5%;
+    box-sizing: border-box;
+    color: var(--color-text-light);
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease, visibility 0.3s ease; /* Transición suave para mostrar/ocultar */
+}
+
+.screen--hidden {
+    display: none; /* Oculta la pantalla */
+    /* Opcional: Animar salida */
+    /* opacity: 0; */
+    /* visibility: hidden; */
+}
+
+.screen h1 {
+    font-size: clamp(24px, 4.5vmin, 48px);
+    margin-bottom: 3.75%;
+    color: var(--color-screen-title);
+    text-shadow: 0 0 8px var(--color-screen-title), 0 0 15px var(--color-shadow-main);
+}
+
+.screen p {
+    font-size: clamp(12px, 1.75vmin, 18px);
+    margin-bottom: 3.125%;
+    line-height: 1.8;
+    max-width: 37.5%; /* 600px relativo a 1600px */
+    color: var(--color-text-medium);
+    text-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
+}
+
+/* Clases para colores en las instrucciones */
+.instruction-color--red { color: var(--color-floating-minus); font-weight: bold; text-shadow: 0 0 5px var(--color-floating-minus); }
+.instruction-color--green { color: var(--color-coin-green); font-weight: bold; text-shadow: 0 0 5px var(--color-coin-green); }
+.instruction-color--blue { color: var(--color-coin-blue); font-weight: bold; text-shadow: 0 0 5px var(--color-coin-blue); }
+.instruction-color--yellow { color: var(--color-coin-yellow); font-weight: bold; text-shadow: 0 0 5px var(--color-coin-yellow); }
+
+.screen button {
+    padding: 1.875% 3.75%;
+    font-size: clamp(14px, 2vmin, 22px);
+    background: var(--color-button-bg);
+    color: var(--color-button-text);
+    border: 3px solid var(--color-button-border);
+    box-shadow: 0 0 10px var(--color-button-border), 0 0 5px var(--color-button-border) inset;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 1.875%;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    font-family: var(--font-primary);
+}
+.screen button:hover {
+    background: var(--color-button-hover-bg);
+    color: var(--color-button-hover-text);
+    box-shadow: 0 0 15px var(--color-button-border), 0 0 25px var(--color-button-border), 0 0 10px var(--color-text-light) inset;
+}
+.screen button:active {
+    transform: scale(0.95);
+    box-shadow: 0 0 5px var(--color-button-border), 0 0 2px var(--color-button-border) inset;
+}
+
+/* --- Formularios --- */
+.form-group {
+    margin-bottom: 1.875%;
+    width: 100%;
+    max-width: 20%; /* 320px relativo a 1600px */
+}
+
+.screen input[type="text"],
+.screen input[type="email"] {
+    font-size: clamp(12px, 1.75vmin, 18px);
+    padding: 1.5% 1.875%;
+    margin-bottom: 1.25%;
+    border: 2px solid var(--color-input-border);
+    background-color: var(--color-input-bg);
+    color: var(--color-input-text);
+    border-radius: 5px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 0 5px var(--color-input-border) inset;
+    font-family: var(--font-primary);
+    box-sizing: border-box; /* Añadido para consistencia */
+}
+/* Estilo para input readonly (correo pre-rellenado) */
+.screen input[readonly] {
+    background-color: #222; /* Gris oscuro */
+    color: #888; /* Texto gris */
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.screen input::placeholder {
+    color: var(--color-text-placeholder);
+    opacity: 0.8;
+    font-size: clamp(10px, 1.25vmin, 14px);
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 1.875% 0;
+    width: 100%; /* Asegura que ocupa el ancho para centrar bien */
+    max-width: 30%; /* Ajusta el ancho si es necesario */
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: auto;
+    margin-right: 1.25%;
+    transform: scale(1.2);
+    cursor: pointer;
+    /* Estilo básico para el checkbox si se desea */
+    accent-color: var(--color-link);
+}
+
+.checkbox-container label {
+    font-size: clamp(11px, 1.5vmin, 16px);
+    cursor: pointer;
+    color: var(--color-text-medium); /* Color base */
+}
+
+.checkbox-container a {
+    color: var(--color-link);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.checkbox-container a:hover {
+    text-shadow: 0 0 8px var(--color-link);
+    text-decoration: underline;
+}
+
+/* --- Modal de Términos y Condiciones --- */
+.modal {
+    display: none; /* Controlado por JS */
+    position: fixed;
+    z-index: 30;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8);
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    position: relative;
+    background-color: var(--color-modal-bg);
+    margin: 5% auto;
+    padding: 2.5%;
+    border: 2px solid var(--color-modal-border);
+    box-shadow: 0 0 15px var(--color-modal-shadow);
+    width: 80%;
+    max-width: 50%; /* 800px relativo a 1600px */
+    max-height: 80vh;
+    border-radius: 8px;
+    overflow: hidden; /* Contiene el botón de cierre flotante */
+    animation: modalSlideIn 0.4s;
+    color: var(--color-text-medium); /* Color de texto por defecto en modal */
+}
+
+@keyframes modalSlideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.close-btn {
+    color: var(--color-link);
+    float: right;
+    font-size: clamp(20px, 3.5vmin, 30px);
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1; /* Ajusta para mejor alineación vertical */
+}
+
+.close-btn:hover {
+    color: var(--color-text-light);
+    text-shadow: 0 0 10px var(--color-link);
+}
+
+.modal-content h2 {
+    color: var(--color-link);
+    text-align: center;
+    margin-top: 0; /* Reset margin */
+    margin-bottom: 2.5%;
+    font-size: clamp(18px, 3vmin, 32px);
+    text-shadow: 0 0 5px var(--color-link);
+}
+
+.modal-content h3 {
+    color: var(--color-link);
+    margin-top: 2.5%;
+    margin-bottom: 1.25%;
+    font-size: clamp(14px, 2vmin, 20px);
+}
+
+.terms-content {
+    max-height: 50vh;
+    overflow-y: auto;
+    padding: 1.25% 1.875%; /* Más padding horizontal */
+    margin-bottom: 2.5%;
+    border: 1px solid var(--color-terms-border);
+    background-color: var(--color-terms-bg);
+    border-radius: 4px; /* Suaviza bordes */
+}
+
+.terms-content p {
+    color: var(--color-text-dark);
+    font-size: clamp(11px, 1.5vmin, 16px);
+    line-height: 1.8;
+    margin-bottom: 1.875%;
+}
+
+/* Estilo del botón Aceptar dentro del modal */
+#acceptTermsBtn {
+    display: block;
+    margin: 1.875% auto 0 auto; /* Ajusta margen superior */
+    padding: 1.25% 2.5%;
+    background: var(--color-button-bg);
+    color: var(--color-button-text);
+    border: 2px solid var(--color-button-border);
+    border-radius: 5px;
+    font-size: clamp(13px, 1.75vmin, 18px);
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: var(--font-primary);
+}
+
+#acceptTermsBtn:hover {
+    background: var(--color-button-hover-bg);
+    color: var(--color-button-hover-text);
+    box-shadow: 0 0 10px var(--color-button-border);
+}
+
+/* --- Texto Flotante --- */
+.floating-text {
+    position: absolute;
+    font-size: clamp(16px, 3vmin, 28px);
+    font-weight: bold;
+    animation: float 1.2s forwards ease-out;
+    z-index: 99;
+    pointer-events: none;
+    /* Sombra definida por clase plus/minus */
+}
+@keyframes float {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-80px) scale(0.8); opacity: 0; }
+}
+.plus {
+    color: var(--color-floating-plus);
+    text-shadow: 0 0 5px var(--color-floating-plus), 0 0 8px var(--color-text-light);
+}
+.minus {
+    color: var(--color-floating-minus);
+    text-shadow: 0 0 5px var(--color-floating-minus), 0 0 8px var(--color-text-light);
+}
+
+/* --- Ranking --- */
+#rankingDisplay h1 {
+    /* Hereda estilos de .screen h1, puede sobreescribirse si es necesario */
+}
+#rankingDisplay #finalScoreText {
+     /* Hereda estilos de .screen p, puede sobreescribirse si es necesario */
+     color: var(--color-text-light); /* Hacerlo más prominente */
+     font-size: clamp(14px, 2vmin, 20px);
+     margin-bottom: 1.5%;
+}
+#ranking {
+    margin-top: 2.5%;
+    font-size: clamp(12px, 1.75vmin, 18px);
+    max-height: 43.75%; /* 350px relativo a 800px */
+    overflow-y: auto;
+    width: 80%;
+    max-width: 31.25%; /* 500px relativo a 1600px */
+    border: 1px solid var(--color-ranking-border);
+    padding: 1.25%;
+    background-color: var(--color-ranking-bg);
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1) inset;
+    color: var(--color-text-dark); /* Color de texto base para el ranking */
+}
+#ranking h2 { /* Estilo para el posible H2 dentro del div #ranking */
+    font-size: clamp(16px, 2.25vmin, 24px);
+    margin-top: 0;
+    margin-bottom: 1.25%;
+    text-align: center;
+    color: var(--color-text-light);
+    text-shadow: 0 0 5px var(--color-text-light);
+}
+#ranking table { width: 100%; border-collapse: collapse; }
+#ranking th, #ranking td {
+    border: 1px solid var(--color-terms-border); /* Reutilizando variable */
+    padding: 1% 1.25%;
+    text-align: left;
+    font-size: clamp(11px, 1.5vmin, 16px);
+}
+#ranking th:first-child, #ranking td:first-child, /* Columna # */
+#ranking th:last-child, #ranking td:last-child { /* Columna Puntos */
+    text-align: center;
+    width: 15%;
+}
+#ranking th:nth-child(2), #ranking td:nth-child(2) { /* Columna Nombre */
+    width: 70%;
+}
+#ranking th { /* Encabezados de tabla */
+    background-color: var(--color-ranking-header-bg);
+    color: var(--color-ranking-header-text);
+    text-shadow: 0 0 4px var(--color-ranking-header-text);
+    position: sticky;
+    top: -1px; /* Ajuste para que el borde no solape */
+    z-index: 1; /* Asegura que esté sobre las filas al hacer scroll */
+}
+#ranking tr:nth-child(even) td { /* Filas alternas */
+    background-color: var(--color-ranking-row-alt-bg);
+}
+#ranking tr:hover td { /* Efecto hover en filas */
+    background-color: var(--color-ranking-row-hover-bg);
+    color: var(--color-text-light);
+}
+/* Mensajes de error/estado dentro del ranking */
+#ranking p {
+    text-align: center;
+    padding: 10px;
+    font-size: clamp(12px, 1.6vmin, 17px);
+}
+
+/* --- Efectos Visuales Adicionales --- */
+@keyframes shake {
+    0%   { transform: translate(0, 0); }
+    25%  { transform: translate(-15px, 0); }
+    50%  { transform: translate(15px, 0); }
+    75%  { transform: translate(-15px, 0); }
+    100% { transform: translate(0, 0); }
+}
+
+.shake {
+    animation: shake 0.3s;
+}
+
+#gameContainer.hit {
+    border-color: var(--color-hit-border) !important; /* !important puede ser necesario para sobreescribir rápido */
+    box-shadow: 0 0 15px var(--color-hit-shadow),
+                0 0 5px var(--color-hit-shadow-inset) inset;
+}
+
+
+/* --- Mensaje de Orientación (Controlado por JS) --- */
+#orientation-message {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--color-screen-bg); /* Reutiliza el fondo de pantalla */
+  color: var(--color-screen-title);
+  display: flex; /* Usaremos 'none'/'flex' desde JS */
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  z-index: 9999;
+  padding: 20px;
+  box-sizing: border-box;
+}
+#orientation-message div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#orientation-message p {
+    color: var(--color-text-light);
+    font-size: clamp(16px, 5vw, 30px); /* Tamaño adaptable */
+    margin-bottom: 20px;
+    max-width: 90%; /* Ajuste de ancho */
+}
+.rotate-icon {
+  font-size: clamp(40px, 10vw, 80px);
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* --- Optimización y Responsividad Móvil --- */
+
+/* Regla para touch-action movida desde inline style */
+/* Ajustes generales para impedir zoom/scroll no deseado en móviles */
+@media screen and (max-width: 1024px) {
+    body {
+        touch-action: pan-x pan-y; /* Permite scroll normal, previene zoom por doble toque */
+        -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+    }
+    #gameContainer {
+        touch-action: none; /* Desactiva acciones táctiles por defecto en el contenedor del juego */
+        /* Ajustes de tamaño/borde para tablets */
+        width: 100%;
+        height: 100vh; /* Ocupar toda la altura */
+        max-width: none;
+        max-height: none;
+        border-radius: 0;
+        border: none;
+        box-shadow: none; /* Quitar sombra en pantalla completa */
+        aspect-ratio: auto; /* Permitir que se adapte */
+    }
+
+    .screen h1 { font-size: clamp(28px, 5vmin, 40px); }
+    .screen p { font-size: clamp(13px, 2vmin, 16px); max-width: 80%; }
+    .form-group { max-width: 60%; }
+    .modal-content { max-width: 80%; }
+    #ranking { max-width: 70%; }
+}
+
+/* Ajustes para móviles más pequeños en horizontal */
+@media screen and (max-width: 768px) {
+     #gameContainer {
+        /* Puede heredar de 1024px o necesitar ajustes específicos */
+        /* height: 100vh; ya heredado */
+     }
+
+     .screen h1 { font-size: clamp(26px, 6vmin, 36px); margin-bottom: 3vmin; }
+     .screen p { font-size: clamp(12px, 2.5vmin, 15px); line-height: 1.5; }
+     .form-group { max-width: 80%; }
+     .screen input[type="text"], .screen input[type="email"] {
+         padding: clamp(8px, 2vmin, 12px);
+         font-size: clamp(12px, 2.5vmin, 16px);
+     }
+     .screen button {
+         padding: clamp(8px, 2vmin, 12px) clamp(16px, 4vmin, 24px);
+         font-size: clamp(14px, 3vmin, 18px);
+     }
+     .checkbox-container label { font-size: clamp(10px, 2.2vmin, 14px); }
+     #score, #timer, #combo {
+         font-size: clamp(12px, 3vmin, 16px);
+         padding: clamp(6px, 2vmin, 10px) clamp(10px, 3vmin, 15px);
+         min-width: auto; /* Permitir que se encojan */
+     }
+     .obstacle, .coin { border-width: 2px; } /* Bordes más finos */
+     #ranking { max-width: 85%; }
+     .modal-content { width: 90%; max-width: 90%; }
+}
+
+/* Ajustes para dispositivos con poca altura */
+@media screen and (max-height: 500px) {
+     #gameContainer {
+         /* Asegura altura completa si no la tiene */
+         height: 100vh;
+     }
+     .screen h1 { margin-bottom: 1vmin; font-size: clamp(22px, 5vmin, 30px); }
+     .form-group { margin-bottom: 1vmin; }
+     .screen input[type="text"], .screen input[type="email"] { margin-bottom: 1vmin; }
+     #ranking { max-height: 60vh; } /* Más espacio para el ranking */
+     .modal-content { margin: 2% auto; max-height: 90vh; } /* Ajuste margen y altura modal */
+     .terms-content { max-height: 65vh; } /* Ajuste scroll términos */
+     #score, #timer, #combo { top: 1.5%; } /* Subir un poco la UI */
+}
+
+/* Soporte específico para altura de viewport en iPhone */
+@supports (-webkit-touch-callout: none) {
+    body, html, #gameContainer {
+         /* Usa -webkit-fill-available para intentar ocupar el área visible real */
+         height: -webkit-fill-available;
+    }
+}
+
+/* Nota: Regla @media (orientation: portrait) { body::before { ... } } ELIMINADA */
